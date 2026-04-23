@@ -1,1 +1,73 @@
 
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IDK - Вход</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #1a1a1a; color: #ffffff; height: 100vh; display: flex; align-items: center; justify-content: center; }
+        .form-container { width: 100%; max-width: 400px; padding: 40px 30px; background-color: #202020; border-radius: 20px; }
+        .title { text-align: center; font-size: 42px; font-weight: 700; color: #8b5cf6; margin-bottom: 40px; }
+        .input-group { background-color: #2d2d2d; border-radius: 30px; display: flex; align-items: center; padding: 0 20px; margin-bottom: 20px; transition: box-shadow 0.3s; }
+        .input-group:focus-within { box-shadow: 0 0 0 2px #8b5cf6; }
+        .input-group svg { width: 24px; height: 24px; fill: #888; flex-shrink: 0; }
+        .input-group input { flex: 1; background: transparent; border: none; padding: 18px 15px; color: #ffffff; font-size: 18px; outline: none; }
+        .input-group input::placeholder { color: #888; }
+        .btn { width: 100%; background: #8b5cf6; border: none; color: white; font-size: 18px; font-weight: 500; padding: 15px; border-radius: 30px; cursor: pointer; transition: opacity 0.3s; }
+        .btn:hover { opacity: 0.8; }
+        .divider { display: flex; align-items: center; gap: 15px; margin: 20px 0; }
+        .divider::before, .divider::after { content: ''; flex: 1; height: 1px; background-color: #3d3d3d; }
+        .divider span { color: #666; font-size: 14px; }
+        .link { text-align: center; color: #8b5cf6; text-decoration: none; cursor: pointer; display: block; margin-top: 10px; }
+        .link:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+    <div class="form-container">
+        <div class="title">IDK</div>
+        <div class="input-group">
+            <svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+            <input type="text" id="username" placeholder="Username">
+        </div>
+        <div class="input-group">
+            <svg viewBox="0 0 24 24"><path d="M12.65 10C11.83 7.67 9.61 6 7 6c-3.31 0-6 2.69-6 6s2.69 6 6 6c2.61 0 4.83-1.67 5.65-4H17v4h4v-4h2v-4H12.65zM7 14c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2z"/></svg>
+            <input type="password" id="password" placeholder="Пароль">
+        </div>
+        <button class="btn" onclick="login()">Войти</button>
+        <div class="divider"><span>или</span></div>
+        <a class="link" href="/register">Создать аккаунт</a>
+    </div>
+
+    <script>
+        async function login() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            if (!username || !password) {
+                alert('Заполните все поля');
+                return;
+            }
+            const resp = await fetch('/api/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, password })
+            });
+            if (resp.ok) {
+                const data = await resp.json();
+                localStorage.setItem('token', data.token);
+                localStorage.setItem('userId', data.user_id);
+                localStorage.setItem('username', data.username);
+                window.location.href = '/users';
+            } else {
+                const error = await resp.json();
+                alert('Ошибка: ' + (error.detail || 'Неверные данные'));
+            }
+        }
+
+        document.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') login();
+        });
+    </script>
+</body>
+</html>
