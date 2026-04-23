@@ -1,5 +1,6 @@
 
-# main.py
+# main.py - исправленная версия
+
 from fastapi import FastAPI, HTTPException, Depends, status, WebSocket, WebSocketDisconnect
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
 from fastapi.middleware.cors import CORSMiddleware
@@ -325,10 +326,10 @@ html_mess = '''
         const input = document.getElementById('messageInput');
         const content = input.value.trim();
         if(!content) return;
-        const resp = await fetch('/api/messages', {
+        const resp = await fetch(`/api/messages?token=${token}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ receiver_id: currentChatUser, content: content, token: token })
+            body: JSON.stringify({ receiver_id: currentChatUser, content: content })
         });
         if(resp.ok) {
             const msg = await resp.json();
@@ -426,18 +427,18 @@ html_login = '''
             const password = document.getElementById('password').value;
             const resp = await fetch('/api/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username, password }) });
             if(resp.ok) { const data = await resp.json(); localStorage.setItem('token', data.token); localStorage.setItem('userId', data.user_id); window.location.href = '/'; }
-            else alert('Ошибка входа');
+            else { const error = await resp.json(); alert('Ошибка входа: ' + (error.detail || 'неверные данные')); }
         };
         document.getElementById('registerBtn').onclick = async () => {
             const username = document.getElementById('regUsername').value;
             const password = document.getElementById('regPassword').value;
             const resp = await fetch('/api/register', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username, password }) });
             if(resp.ok) { const data = await resp.json(); localStorage.setItem('token', data.token); localStorage.setItem('userId', data.user_id); window.location.href = '/'; }
-            else alert('Ошибка регистрации');
+            else { const error = await resp.json(); alert('Ошибка регистрации: ' + (error.detail || 'пользователь уже существует')); }
         };
         document.getElementById('showRegister').onclick = () => { document.getElementById('loginForm').style.display = 'none'; document.getElementById('registerForm').style.display = 'flex'; };
         document.getElementById('showLogin').onclick = () => { document.getElementById('registerForm').style.display = 'none'; document.getElementById('loginForm').style.display = 'flex'; };
-        document.addEventListener('keypress', (e) => { if(e.key === 'Enter') document.getElementById('loginBtn').click(); });
+        document.addEventListener('keypress', (e) => { if(e.key === 'Enter') { if(document.getElementById('loginForm').style.display !== 'none') document.getElementById('loginBtn').click(); else document.getElementById('registerBtn').click(); } });
     </script>
 </body>
 </html>
